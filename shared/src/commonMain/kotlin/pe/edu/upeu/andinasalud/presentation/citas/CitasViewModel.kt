@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pe.edu.upeu.andinasalud.domain.usecase.ObtenerCitasUseCase
+import pe.upeu.andinasalud.domain.usecase.ObtenerCitasUseCase
 
 class CitasViewModel(
     private val obtenerCitasUseCase: ObtenerCitasUseCase

@@ -26,18 +26,33 @@ data class DetalleCitaUi(
  * Extensión para mapear el modelo de dominio directamente al modelo de detalle.
  */
 fun Cita.aDetalleUi(): DetalleCitaUi {
-    val (estadoTexto, esProgramada, indicaciones, motivo) = when (val est = this.estado) {
-        is EstadoCita.Programada ->
-            "Programada${if (est.recordatorioActivo) " (con recordatorio)" else ""}" to true to null to null
-        is EstadoCita.Atendida ->
-            "Atendida" to false to est.indicaciones to null
-        is EstadoCita.Cancelada ->
-            "Cancelada" to false to null to est.motivo
-    }
+    data class EstadoInfo(
+        val texto: String,
+        val esProgramada: Boolean,
+        val indicaciones: String?,
+        val motivo: String?
+    )
 
-    // RN-03: Visualmente solo habilitamos el botón si está Programada.
-    // La validación de las 24 horas se hace en el UseCase al hacer clic.
-    val puedeCancelarse = esProgramada
+    val info = when (val est = this.estado) {
+        is EstadoCita.Programada -> EstadoInfo(
+            texto = "Programada${if (est.recordatorioActivo) " (con recordatorio)" else ""}",
+            esProgramada = true,
+            indicaciones = null,
+            motivo = null
+        )
+        is EstadoCita.Atendida -> EstadoInfo(
+            texto = "Atendida",
+            esProgramada = false,
+            indicaciones = est.indicaciones,
+            motivo = null
+        )
+        is EstadoCita.Cancelada -> EstadoInfo(
+            texto = "Cancelada",
+            esProgramada = false,
+            indicaciones = null,
+            motivo = est.motivo
+        )
+    }
 
     return DetalleCitaUi(
         id = this.id,
@@ -46,10 +61,10 @@ fun Cita.aDetalleUi(): DetalleCitaUi {
         sede = this.sede,
         fecha = this.fecha,
         hora = this.hora,
-        estadoTexto = estadoTexto,
-        esProgramada = esProgramada,
-        indicaciones = indicaciones,
-        motivoCancelacion = motivo,
-        puedeCancelarse = puedeCancelarse
+        estadoTexto = info.texto,
+        esProgramada = info.esProgramada,
+        indicaciones = info.indicaciones,
+        motivoCancelacion = info.motivo,
+        puedeCancelarse = info.esProgramada
     )
 }

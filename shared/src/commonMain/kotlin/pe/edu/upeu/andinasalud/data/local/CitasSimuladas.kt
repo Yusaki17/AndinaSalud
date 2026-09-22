@@ -8,9 +8,9 @@ object CitasSimuladas {
 
     val paciente = Paciente(
         id = "P-0417",
-        nombre = "Lucía Quispe Mamani",
+        nombre = "Julio Ernsto Pantoja",
         documento = "70154823",
-        correo = "lucia.quispe@correo.pe"
+        correo = "juliopantoja@gmail.pe"
     )
 
     val sedes = listOf("Ñaña", "Chosica", "Chaclacayo", "Santa Anita")

@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import pe.edu.upeu.andinasalud.presentation.citas.CitaUi
+import pe.edu.upeu.andinasalud.presentation.components.EstadoVacio
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

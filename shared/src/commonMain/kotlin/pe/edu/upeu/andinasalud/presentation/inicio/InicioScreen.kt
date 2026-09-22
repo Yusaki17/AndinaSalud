@@ -1,9 +1,6 @@
 package pe.edu.upeu.andinasalud.presentation.inicio
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -19,9 +16,6 @@ import pe.edu.upeu.andinasalud.data.local.CitasSimuladas
 import pe.edu.upeu.andinasalud.domain.model.EstadoCita
 import pe.edu.upeu.andinasalud.navigation.Screen
 
-/**
- * Opciones de acceso rápido para la pantalla de inicio (RF-01)
- */
 data class OpcionInicio(
     val screen: Screen,
     val icono: androidx.compose.ui.graphics.vector.ImageVector,
@@ -34,19 +28,16 @@ val OPCIONES_INICIO = listOf(
         screen = Screen.Citas,
         icono = Icons.Default.ListAlt,
         titulo = "Mis citas",
-        descripcion = "Revisa y gestiona tus citas médicas"
+        descripcion = "Revisa y gestiona tus citas"
     ),
     OpcionInicio(
         screen = Screen.SolicitudCita,
         icono = Icons.Default.AddCircle,
         titulo = "Solicitar cita",
-        descripcion = "Agenda una nueva consulta médica"
+        descripcion = "Agenda una nueva consulta"
     )
 )
 
-/**
- * Helper para obtener la próxima cita programada del paciente simulado.
- */
 private fun obtenerProximaCitaProgramada() = CitasSimuladas.citas
     .filter { it.estado is EstadoCita.Programada }
     .sortedWith(compareBy({ it.fecha }, { it.hora }))
@@ -61,14 +52,15 @@ fun InicioScreen(
     val paciente = CitasSimuladas.paciente
     val proximaCita = obtenerProximaCitaProgramada()
 
+    // ✅ CORRECCIÓN: verticalScroll está bien, pero eliminamos el LazyVerticalGrid de adentro
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()) // Evita desbordes en pantallas pequeñas
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // 1. Saludo con el nombre del paciente (RF-01)
+        // 1. Saludo
         Column {
             Text(
                 text = "Hola, ${paciente.nombre.split(" ").first()}",
@@ -82,7 +74,7 @@ fun InicioScreen(
             )
         }
 
-        // 2. Tarjeta destacada con la próxima cita programada (RF-01)
+        // 2. Tarjeta destacada con la próxima cita
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -134,24 +126,21 @@ fun InicioScreen(
             }
         }
 
-        // 3. Accesos rápidos generados desde lista (RF-01)
+        // 3. Accesos rápidos (✅ CORREGIDO: Usamos Row simple en vez de LazyVerticalGrid)
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
                 text = "Accesos rápidos",
                 style = MaterialTheme.typography.titleMedium
             )
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(bottom = 16.dp) // Espacio al final del scroll
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(OPCIONES_INICIO) { opcion ->
+                OPCIONES_INICIO.forEach { opcion ->
                     Card(
                         onClick = { onNavegar(opcion.screen) },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.weight(1f) // Divide el espacio equitativamente
                     ) {
                         Column(
                             modifier = Modifier

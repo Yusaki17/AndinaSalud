@@ -1,4 +1,4 @@
-package pe.edu.upeu.bibliomobil.theme
+package pe.edu.upeu.andinasalud.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
@@ -76,7 +76,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun BiblioMobilTheme(
+fun AndinaSaludTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
