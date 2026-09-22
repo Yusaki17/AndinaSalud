@@ -45,7 +45,7 @@ object CitasSimuladas {
         Cita(
             id = 3,
             especialidad = "Nutrición",
-            medico = "Lic. Ana Bermúdez",
+            medico = "Eliana Cabrera",
             sede = "Santa Anita",
             fecha = "2026-09-25",
             hora = "11:15",
