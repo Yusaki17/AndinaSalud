@@ -19,8 +19,10 @@ class CitaRepositoryFake : CitaRepository {
     private var nextId = (citas.maxOfOrNull { it.id } ?: 0L) + 1
 
     override suspend fun obtenerCitas(): List<Cita> {
-        delay(800) // Simula latencia de red (RF-08)
+        println("📡 [CitaRepositoryFake] Obteniendo citas...")
+        delay(800)
         return mutex.withLock {
+            println("📡 [CitaRepositoryFake] Citas encontradas: ${citas.size}")
             citas.sortedWith(
                 compareBy<Cita> { it.fecha }.thenBy { it.hora }
             )
@@ -35,7 +37,12 @@ class CitaRepositoryFake : CitaRepository {
             nuevaCita.id
         }
     }
-
+    override suspend fun eliminarCita(id: Long) {
+        delay(800)
+        mutex.withLock {
+            citas.removeAll { it.id == id }
+        }
+    }
     override suspend fun cancelarCita(id: Long, motivo: String) {
         delay(800) // Simula latencia de red
         mutex.withLock {

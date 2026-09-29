@@ -7,11 +7,12 @@ import org.koin.dsl.module
 import pe.edu.upeu.andinasalud.data.repository.CitaRepositoryFake
 import pe.edu.upeu.andinasalud.domain.repository.CitaRepository
 import pe.edu.upeu.andinasalud.domain.usecase.CancelarCitaUseCase
+import pe.edu.upeu.andinasalud.domain.usecase.EliminarCitaUseCase
+import pe.edu.upeu.andinasalud.domain.usecase.ObtenerCitasUseCase
 import pe.edu.upeu.andinasalud.domain.usecase.SolicitarCitaUseCase
 import pe.edu.upeu.andinasalud.presentation.citas.CitasViewModel
 import pe.edu.upeu.andinasalud.presentation.detalle.DetalleCitaViewModel
 import pe.edu.upeu.andinasalud.presentation.solicitud.SolicitudViewModel
-import pe.upeu.andinasalud.domain.usecase.ObtenerCitasUseCase
 
 val dataModule = module {
     single<CitaRepository> { CitaRepositoryFake() }
@@ -21,18 +22,19 @@ val domainModule = module {
     factory { ObtenerCitasUseCase(get()) }
     factory { SolicitarCitaUseCase(get()) }
     factory { CancelarCitaUseCase(get()) }
+    factory { EliminarCitaUseCase(get()) } // ← NUEVO
 }
 
 val presentationModule = module {
-    // 1 parámetro
-    viewModel { CitasViewModel(get()) }
+    // ✅ CitasViewModel: 3 parámetros ahora
+    viewModel { CitasViewModel(get(), get(), get()) }
 
-    // 3 parámetros: Long (se pasa dinámicamente), ObtenerCitasUseCase, CancelarCitaUseCase
+    // DetalleCitaViewModel: 3 parámetros
     viewModel { (citaId: Long) ->
         DetalleCitaViewModel(citaId, get(), get())
     }
 
-    // 1 parámetro
+    // SolicitudViewModel: 1 parámetro
     viewModel { SolicitudViewModel(get()) }
 }
 

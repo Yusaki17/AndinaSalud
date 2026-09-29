@@ -164,7 +164,7 @@ fun App() = KoinContext {
                             SolicitudScreen(
                                 viewModel = viewModel,
                                 onVolver = {
-                                    pantallaActual = Screen.Citas
+                                    pantallaActual = Screen.Citas // ← Ir a Citas, no a Inicio
                                 }
                             )
                         }

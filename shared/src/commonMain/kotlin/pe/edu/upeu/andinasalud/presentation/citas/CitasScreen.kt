@@ -6,8 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,8 +22,12 @@ fun CitasScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // ✅ NUEVO: Recargar citas cada vez que la pantalla sea visible
+    LaunchedEffect(Unit) {
+        viewModel.cargarCitas()
+    }
+
     Column(modifier = modifier.fillMaxSize()) {
-        // 1. Barra de Búsqueda (RF-05)
         val busqueda by viewModel.uiState.collectAsStateWithLifecycle()
         val textoBusqueda = (busqueda as? CitasUiState.ConCitas)?.busqueda ?: ""
 
@@ -40,7 +43,6 @@ fun CitasScreen(
             shape = MaterialTheme.shapes.large
         )
 
-        // 2. Filtros por Estado (RF-02)
         val filtroActual = (busqueda as? CitasUiState.ConCitas)?.filtro ?: FiltroCita.TODAS
 
         ScrollableTabRow(
@@ -63,7 +65,6 @@ fun CitasScreen(
             }
         }
 
-        // 3. Contenido con Fases Exhaustivas (RF-08)
         Box(modifier = Modifier.weight(1f)) {
             when (val estado = uiState) {
                 is CitasUiState.Cargando -> {
@@ -80,11 +81,7 @@ fun CitasScreen(
                     EstadoVacio(
                         icono = Icons.Default.EventBusy,
                         titulo = "No hay citas",
-                        descripcion = if (estado is CitasUiState.ConCitas && estado.busqueda.isNotBlank()) {
-                            "No se encontraron citas con ese criterio de búsqueda."
-                        } else {
-                            "No tienes citas registradas en el sistema."
-                        },
+                        descripcion = "No tienes citas registradas en el sistema.",
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -97,7 +94,8 @@ fun CitasScreen(
                         items(estado.citas, key = { it.id }) { cita ->
                             CitaItem(
                                 cita = cita,
-                                onClick = { onNavegarADetalle(cita.id) }
+                                onClick = { onNavegarADetalle(cita.id) },
+                                onEliminar = { viewModel.eliminarCita(cita.id) }
                             )
                         }
                     }
@@ -124,7 +122,8 @@ fun CitasScreen(
 @Composable
 private fun CitaItem(
     cita: CitaUi,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onEliminar: () -> Unit
 ) {
     Card(
         onClick = onClick,
@@ -133,35 +132,55 @@ private fun CitaItem(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Event,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = cita.especialidad, style = MaterialTheme.typography.titleMedium)
-                Text(text = cita.medico, style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    text = "${cita.fecha} a las ${cita.hora} · ${cita.sede}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Event,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
                 )
-                AssistChip(
-                    onClick = { },
-                    label = { Text(cita.estadoTexto, style = MaterialTheme.typography.labelMedium) },
-                    modifier = Modifier.padding(top = 8.dp),
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = if (cita.esProgramada)
-                            MaterialTheme.colorScheme.primaryContainer
-                        else
-                            MaterialTheme.colorScheme.surfaceVariant
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = cita.especialidad, style = MaterialTheme.typography.titleMedium)
+                    Text(text = cita.medico, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = "${cita.fecha} a las ${cita.hora} · ${cita.sede}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                )
+                    AssistChip(
+                        onClick = { },
+                        label = { Text(cita.estadoTexto, style = MaterialTheme.typography.labelMedium) },
+                        modifier = Modifier.padding(top = 8.dp),
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = if (cita.esProgramada)
+                                MaterialTheme.colorScheme.primaryContainer
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                }
+            }
+
+            if (cita.esProgramada) {
+                Spacer(modifier = Modifier.height(12.dp))
+                TextButton(
+                    onClick = onEliminar,
+                    modifier = Modifier.align(Alignment.End),
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Eliminar")
+                }
             }
         }
     }

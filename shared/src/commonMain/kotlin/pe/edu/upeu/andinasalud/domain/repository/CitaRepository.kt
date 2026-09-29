@@ -26,4 +26,5 @@ interface CitaRepository {
      * @param motivo el motivo de la cancelación
      */
     suspend fun cancelarCita(id: Long, motivo: String)
+    suspend fun eliminarCita(id: Long)
 }

@@ -6,8 +6,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -21,18 +20,26 @@ fun SolicitudScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Estados para los dropdowns
+    var expandedEspecialidad by remember { mutableStateOf(false) }
+    var expandedSede by remember { mutableStateOf(false) }
+
     if (uiState.isSuccess) {
-        // Pantalla de éxito tras registrar
         Column(
             modifier = modifier.fillMaxSize().padding(24.dp),
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(64.dp))
+            Icon(
+                Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(64.dp)
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Text("Cita solicitada con éxito", style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = onVolver) { Text("Volver al inicio") }
+            Button(onClick = onVolver) { Text("Ver mis citas") } // ← Cambia el texto
         }
     } else {
         Column(
@@ -44,29 +51,76 @@ fun SolicitudScreen(
         ) {
             Text("Solicitar nueva cita", style = MaterialTheme.typography.headlineMedium)
 
-            // Selector de Especialidad (Simplificado con TextField para el examen)
-            OutlinedTextField(
-                value = uiState.especialidad,
-                onValueChange = viewModel::onEspecialidadChange,
-                label = { Text("Especialidad") },
-                isError = uiState.errorEspecialidad != null,
-                supportingText = uiState.errorEspecialidad?.let { { Text(it) } },
-                modifier = Modifier.fillMaxWidth()
-            )
+            // ✅ Selector de Especialidad con dropdown
+            ExposedDropdownMenuBox(
+                expanded = expandedEspecialidad,
+                onExpandedChange = { expandedEspecialidad = it }
+            ) {
+                OutlinedTextField(
+                    value = uiState.especialidad,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Especialidad") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEspecialidad) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    isError = uiState.errorEspecialidad != null,
+                    supportingText = uiState.errorEspecialidad?.let { { Text(it) } }
+                )
 
-            // Selector de Sede
-            OutlinedTextField(
-                value = uiState.sede,
-                onValueChange = viewModel::onSedeChange,
-                label = { Text("Sede") },
-                isError = uiState.errorSede != null,
-                supportingText = uiState.errorSede?.let { { Text(it) } },
-                modifier = Modifier.fillMaxWidth()
-            )
+                ExposedDropdownMenu(
+                    expanded = expandedEspecialidad,
+                    onDismissRequest = { expandedEspecialidad = false }
+                ) {
+                    viewModel.especialidades.forEach { especialidad ->
+                        DropdownMenuItem(
+                            text = { Text(especialidad) },
+                            onClick = {
+                                viewModel.onEspecialidadChange(especialidad)
+                                expandedEspecialidad = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            // ✅ Selector de Sede con dropdown
+            ExposedDropdownMenuBox(
+                expanded = expandedSede,
+                onExpandedChange = { expandedSede = it }
+            ) {
+                OutlinedTextField(
+                    value = uiState.sede,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Sede") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedSede) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    isError = uiState.errorSede != null,
+                    supportingText = uiState.errorSede?.let { { Text(it) } }
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expandedSede,
+                    onDismissRequest = { expandedSede = false }
+                ) {
+                    viewModel.sedes.forEach { sede ->
+                        DropdownMenuItem(
+                            text = { Text(sede) },
+                            onClick = {
+                                viewModel.onSedeChange(sede)
+                                expandedSede = false
+                            }
+                        )
+                    }
+                }
+            }
 
             // Fecha y Hora
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-
                 OutlinedTextField(
                     value = uiState.fecha,
                     onValueChange = viewModel::onFechaChange,
@@ -107,7 +161,7 @@ fun SolicitudScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Error Global (RN-02, RN-05)
+            // Error Global
             uiState.errorGlobal?.let { error ->
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
                     Text(
